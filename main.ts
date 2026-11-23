@@ -222,7 +222,7 @@ function replacement(body: BodyLine[], matched: string[], old: string[], tier: n
     else if (line.kind === '-') cursor += 1;
     else {
       let text = line.text;
-      if (tier === 2 && /[^ \t]/.test(text) && text.startsWith(patchIndent)) text = fileIndent + text.slice(patchIndent.length);
+      if (tier === 2 && !blank(text) && text.startsWith(patchIndent)) text = fileIndent + text.slice(patchIndent.length);
       out.push(text);
     }
   }
@@ -358,7 +358,7 @@ function unifiedEdits(lines: string[], strict: boolean): Edit[] {
   return sections.map((s): Edit => (tree) => {
     const create = s.create || s.old === '/dev/null';
     const remove = !create && (s.remove || s.next === '/dev/null');
-    checkPaths(create ? [s.next] : remove ? [s.old] : [s.old, s.next]);
+    checkPaths([s.old, s.next].filter((p) => p !== '/dev/null'));
     if (create) {
       if (tree.get(s.next) !== null) throw new Fail('exists', s.next);
       const added = s.hunks.flatMap((h) => h.body.filter((l) => l.kind === '+'));
